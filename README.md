@@ -335,6 +335,7 @@ ldapsearch -LLL -x -H ldap://\<FQDN\> -b '' -s base '(objectclass=*)'
 
 ```bash
 dirb http://$IP wordlist -o dirb/dirb
+dirb http://$IP wordlist -o dirb/dirb -X .html,.js
 ```
 
 ```bash
