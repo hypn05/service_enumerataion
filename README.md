@@ -12,6 +12,7 @@
   - [SSH(22)](#ssh22)
   - [SMPT(25)](#smpt25)
   - [DNS(53)](#dns53)
+    - [Linux](#linux)
     - [Windows](#windows)
   - [RCP(135)](#rcp135)
   - [Netbios(137)](#netbios137)
@@ -28,8 +29,6 @@
   - [Random port](#random-port)
   - [Brute Forcing](#brute-forcing)
   - [Password List](#password-list)
-
-
 
 ## Scanning
 
@@ -155,6 +154,9 @@ Metasploit Modules for SMTP service;
 ## DNS(53)
 
 ---
+
+### Linux
+
 Zone transfer request
 > dnsrecon -d $IP -t axfr
 > 
@@ -176,8 +178,8 @@ Find email servers
 Reverse dns lookup bruteforceing
 > for ip in $(seq 155 190); do host 192.168.67.$ip;done | grep -v "not found"
 
-
 ### Windows
+
 > nslookup -> set type=any -> ls -d test.com
 
 > dnsrecon -d $IP -d /usr/share/wprdlists/dnsmap.txt -t std
