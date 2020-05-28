@@ -33,7 +33,10 @@
 ## Scanning
 
 ---
-> nmap -sC -sV -oN nmap/nmap $IP
+
+```bash
+nmap -sC -sV -oN nmap/nmap $IP
+```
 
 - **sC** : Run default scripts
 - **sV** : Determine service version info
