@@ -10,11 +10,11 @@
   - [FTP(21)](#ftp21)
   - [TFTP](#tftp)
   - [SSH(22)](#ssh22)
-  - [SMPT(25)](#smpt25)
+  - [SMTP(25)](#smtp25)
   - [DNS(53)](#dns53)
     - [Linux](#linux)
     - [Windows](#windows)
-  - [RCP(135)](#rcp135)
+  - [RPC(135)](#rpc135)
   - [Netbios(137)](#netbios137)
   - [SMB(139,445)](#smb139445)
   - [LDAP(389)](#ldap389)
@@ -131,7 +131,7 @@ Metasploit Modules for SSH service
 - auxiliary/scanner/ssh/ssh_login_pubkey
 - auxiliary/scanner/ssh/ssh_version
 
-## SMPT(25)
+## SMTP(25)
 
 ---
 > nmap --script=smtp-enum-users,smtp-commands,smtp-vuln-cve2011-1720,smtp-vuln-cve2011-1764,smtp-vuln-cve2010-4344 -p 25 -n -v -sV -Pn $IP
@@ -184,11 +184,10 @@ Reverse dns lookup bruteforceing
 
 > dnsrecon -d $IP -d /usr/share/wprdlists/dnsmap.txt -t std
 
-## RCP(135)
+## RPC(135)
 
 ---
 > nmap -n -v -sV -Pn -p 135 --script=msrpc-enum $IP
-
 
 Metasploit Exploit Module for Microsoft RPC service;
 
@@ -219,11 +218,11 @@ Metasploit Exploit Module for Microsoft RPC service;
 >
 > smbclient -L \\\\\\\\$IP
 > 
-> smbclinet \\\\\\\\$IP\\\\share
+> smbclient \\\\\\\\$IP\\\\share
 > 
-> smbclinet \\\\\\\\$IP\\\\share -U uaername%password
+> smbclient \\\\\\\\$IP\\\\share -U uaername%password
 >
-> smbclinet \\\\\\\\$IP\\\\share -U username
+> smbclient \\\\\\\\$IP\\\\share -U username
 >
 > rpcclient -U "" $IP
 
