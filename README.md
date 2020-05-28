@@ -197,7 +197,7 @@ Metasploit Exploit Module for Microsoft RPC service;
 
 ---
 `Dumping the netbios table`
-> nmap -Pn -sUC -p137 $ip
+> nmap -Pn -sU -sC -p137 $ip
 
 ---
 
