@@ -338,6 +338,11 @@ dirb http://$IP wordlist -o dirb/dirb
 dirb http://$IP wordlist -o dirb/dirb -X .html,.js
 ```
 
+**NOTE**
+
+Extenstions to check: .txt, .php, .html
+Use blank ("") if you want to check for folder
+
 ```bash
 nikto -host $IP:port
 ```
